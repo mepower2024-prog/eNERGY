@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: energy-monitoring-backend
-    plan: free
-    docker:
-      dockerfilePath: ./Dockerfile
