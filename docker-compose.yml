@@ -1,0 +1,57 @@
+
+services:
+  nodered:
+    image: nodered/node-red:latest
+    container_name: NodeRed-Service
+    environment:
+      - TZ=Asia/Kolkata
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./NodeRed-Universe/NodeRed-DATA:/data
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: Mosquitto-Service
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./Mosquitto-Universe/Mosquitto-CONFIG:/mosquitto/config
+      - ./Mosquitto-Universe/Mosquitto-DATA:/mosquitto/data
+      - ./Mosquitto-Universe/Mosquitto-LOG:/mosquitto/log
+
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  influxdb:
+    image: influxdb:2
+    container_name: InfluxDB-Service
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./Timeseriesdata-Universe/Influxdb-DATA:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=smartsurge-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=Energy Monitoring
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=super-secret-token
+      
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: Grafana-Service
+    ports:
+      - 3000:3000
+    volumes:
+      - ./Timeseriesdata-Universe/Grafana-DATA:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - influxdb
+    restart: unless-stopped
